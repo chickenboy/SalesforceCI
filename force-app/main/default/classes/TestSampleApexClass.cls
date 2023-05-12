@@ -1,34 +1,34 @@
 @isTest
 public class TestSampleApexClass {
-    public static void createAccounts(Integer amount) {
-        List<Account> accounts = new List<Account>();
+  public static void createAccounts(Integer amount) {
+    List<Account> accounts = new List<Account>();
 
-        for (Integer i = 1; i <= amount; i++) {
-            accounts.add(new Account(Name = 'Name ' + i));
-        }
-
-        insert accounts;
+    for (Integer i = 1; i <= amount; i++) {
+      accounts.add(new Account(Name = 'Name ' + i));
     }
 
-    @isTest
-    static void getAccountList() {
-        TestSampleApexClass.createAccounts(10);
+    insert accounts;
+  }
 
-        Test.startTest();
-        List<Account> accts = AccountController.getAccountList();
-        Test.stopTest();
+  @isTest
+  static void getAccountList() {
+    TestSampleApexClass.createAccounts(10);
 
-        Assert.areEqual(10, accts.size());
-    }
+    Test.startTest();
+    List<Account> accts = AccountController.getAccountList();
+    Test.stopTest();
 
-    @isTest
-    static void getSingleAccount() {
-        TestSampleApexClass.createAccounts(1);
+    Assert.areEqual(10, accts.size());
+  }
 
-        Test.startTest();
-        Account acc = AccountController.getSingleAccount();
-        Test.stopTest();
+  @isTest
+  static void getSingleAccount() {
+    TestSampleApexClass.createAccounts(1);
 
-        Assert.areEqual('Name 1', acc.Name);
-    }
+    Test.startTest();
+    Account acc = AccountController.getSingleAccount();
+    Test.stopTest();
+
+    Assert.areEqual('Name 1', acc.Name);
+  }
 }
