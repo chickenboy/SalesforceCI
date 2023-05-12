@@ -61,7 +61,7 @@ jobs:
         run: exit 1
       # Install Salesforce CLI
       - name: 'Install Salesforce CLI'
-        uses: |
+        run: |
           npm install sfdx-cli --location=global
           nodeInstallPath=$(npm config get prefix)
           echo "$nodeInstallPath/bin" >> $GITHUB_PATH
