@@ -15,7 +15,7 @@ public class TestSampleApexClass {
     TestSampleApexClass.createAccounts(10);
 
     Test.startTest();
-    List<Account> accts = AccountController.getAccountList();
+    List<Account> accts = SampleApexClass.getAccountList();
     Test.stopTest();
 
     Assert.areEqual(10, accts.size());
@@ -26,7 +26,7 @@ public class TestSampleApexClass {
     TestSampleApexClass.createAccounts(1);
 
     Test.startTest();
-    Account acc = AccountController.getSingleAccount();
+    Account acc = SampleApexClass.getSingleAccount();
     Test.stopTest();
 
     Assert.areEqual('Name 1', acc.Name);
