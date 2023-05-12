@@ -1,0 +1,105 @@
+# Unique name for this workflow
+name: CI
+
+# Definition when the workflow should run
+on:
+  workflow_dispatch:
+  push:
+    branches: 
+      - master
+    paths-ignore: 
+      - 'sfdx-project.json'
+      - 'README.md'
+# Jobs to be executed
+jobs:
+  format-lint-lwc-tests:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the source code
+      - name: 'Checkout source code'
+        uses: actions/checkout@v3
+      # Cache node_modules to speed up the process
+      - name: 'Re-store node_modules cache'
+        id: cache-npm
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: npm-${{hashFiles('**/package-lock.json')}}
+          restore-keys: |
+              npm-${{ env.cache-name }}-
+              npm-
+      # Install npm dependencies for Prettier and Jest
+      - name: 'Install NPM dependency'
+        if: steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm ci
+
+      # Prettier formatting
+      - name: 'Code formatting verification with Prettier'
+        run: npm run prettier:verify
+
+      # Lint Aura/LWC
+      - name: 'Unit test Lightning Web Components'
+        run: npm run test:unit:coverage
+
+  scratch-org-test:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the source code
+      - name: 'Checkout source code'
+        uses: actions/checkout@v3
+
+      # Run PMD scan
+      - name: 'Run PMD scan'
+        uses: pmd/pmd-github-action@v1.4.0
+        id: pmd
+        with:
+          sourcePath: 'force-app'
+          rulesets: 'ruleset.xml'
+      # Check for PMD violation
+      - name: 'Checking the PMD violation'
+        if: steps.pmd.output.violations != 0
+        run: exit 1
+      # Install Salesforce CLI
+      - name: 'Install Salesforce CLI'
+        uses: |
+          npm install sfdx-cli --location=global
+          nodeInstallPath=$(npm config get prefix)
+          echo "$nodeInstallPath/bin" >> $GITHUB_PATH
+          sfdx --version
+      # Store secret for dev hub
+      - name: 'Populate auth file with DEVHUB_SFDX_URL secret'
+        shell: bash
+        run: |
+          echo ${{ secrets.DEVHUB_SFDX_URL}} > ./DEVHUB_SFDX_URL.txt
+          secretFileSize=$(wc -c "./DEVHUB_SFDX_URL.txt" | awk '{print $1}')
+          if [ $secretFileSize == 1 ]; then
+              echo "Missing DEVHUB_SFDX_URL secret. Is this workflow running on a fork?";
+              exit 1;
+          fi
+      # Authenticate dev hub
+      - name: 'Authenticate Dev Hub'
+        run: sfdx:auth:sfdxurl:store -f ./DEVHUB_SFDX_URL.txt -a devhub -d
+
+      # Create scratch org
+      - name: 'Create scratch org'
+        run: sfdx:force:org:create -f config/project-scratch-def.json -a scratch-org -s -d 1
+      
+      # Deploy source to scratch org
+      - name: 'Push source to scratch org'
+        run: sfdx force:source:push
+        
+      # Assign permission set
+      - name: 'Assign permissionset to default user'
+        run: sfdx force:user:permset:assign -n recipes
+        
+      # Import sample data
+      - name: 'Import sample data'
+        run: sfdx force:data:tree:import -p ./data/data-plan.json
+        
+      # Run Apex tests in scratch org
+      - name: 'Run Apex tests'
+        run: sfdx force:apex:test:run -c -r human -d ./tests/apex -w 20
+      # Housekeeping
+      - name: 'Delete scratch org'
+        if: always()
+        run: sfdx force:org:delete -p -u scratch-org
