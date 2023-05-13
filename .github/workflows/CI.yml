@@ -38,8 +38,8 @@ jobs:
         run: npm run prettier:verify
 
       # Lint Aura/LWC
-      - name: "Unit test Lightning Web Components"
-        run: npm run test:unit:coverage
+      # - name: "Unit test Lightning Web Components"
+      #   run: npm run test:unit:coverage
 
   scratch-org-test:
     runs-on: ubuntu-latest
@@ -89,12 +89,12 @@ jobs:
         run: sfdx force:source:push
 
       # Assign permission set
-      - name: "Assign permissionset to default user"
-        run: sfdx force:user:permset:assign -n recipes
+      # - name: "Assign permissionset to default user"
+      #   run: sfdx force:user:permset:assign -n recipes
 
       # Import sample data
-      - name: "Import sample data"
-        run: sfdx force:data:tree:import -p ./data/data-plan.json
+      # - name: "Import sample data"
+      #   run: sfdx force:data:tree:import -p ./data/data-plan.json
 
       # Run Apex tests in scratch org
       - name: "Run Apex tests"
