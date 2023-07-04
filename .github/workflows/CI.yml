@@ -100,7 +100,7 @@ jobs:
       - name: "Run Apex tests"
         run: |
           sfdx force:apex:test:run -c -r human -d ./tests/apex -w 20
-          echo ${{ sfdx force:data:soql:query -q "SELECT PercentCovered FROM ApexOrgWideCoverage"}} > sample.txt
+          echo ${sfdx force:data:soql:query -q "SELECT PercentCovered FROM ApexOrgWideCoverage"} > sample.txt
 
       # Housekeeping
       - name: "Delete scratch org"
