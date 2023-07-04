@@ -111,7 +111,7 @@ jobs:
       - name: "Checking the coverage"
         shell: bash
         run: |
-          sample.txt > currentCoverage;
+          currentCoverage=$(<sample.txt);
           echo $currentCoverage;
           if [ $currentCoverage < 85 ]; then
               echo "The Coverage is not enough for deploy code.";
